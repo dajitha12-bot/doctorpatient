@@ -213,14 +213,31 @@ def patient_book(request):
             appt.patient = request.user
             appt.status = 'WAITING'
             appt.priority = 'NORMAL'
-            
-            # Calculate expected time
-            appt.expected_time = calculate_expected_time(
-                appt.doctor, appt.appointment_date, appt.appointment_time
-            )
-            appt.token_number = f"T-{100 + appt.id if appt.id else Appointment.objects.count() + 101}"
+
+            if not appt.appointment_date:
+                appt.appointment_date = timezone.now().date()
+
+            # Automatic FCFS time slot calculation
+            existing_appts = Appointment.objects.filter(
+                doctor=appt.doctor,
+                appointment_date=appt.appointment_date
+            ).order_by('appointment_time', 'id')
+
+            base_dt = datetime.combine(appt.appointment_date, time(9, 0)) # Default start at 9:00 AM
+
+            if existing_appts.exists():
+                last_appt = existing_appts.last()
+                last_time = last_appt.expected_time or last_appt.appointment_time
+                last_dt = datetime.combine(appt.appointment_date, last_time)
+                next_dt = last_dt + timedelta(minutes=appt.doctor.average_consultation_minutes)
+            else:
+                next_dt = base_dt
+
+            appt.appointment_time = next_dt.time()
+            appt.expected_time = next_dt.time()
+            appt.token_number = f"T-{100 + (appt.id or Appointment.objects.count() + 1)}"
             appt.save()
-            
+
             # Auto-generate notification
             Notification.objects.create(
                 patient=request.user,
@@ -228,7 +245,7 @@ def patient_book(request):
                 message=f"Appointment #{appt.id} booked with Dr. {appt.doctor.name} ({appt.doctor.specialization}) for {appt.appointment_date} at {appt.appointment_time.strftime('%I:%M %p')}."
             )
 
-            messages.success(request, f"Appointment #{appt.id} booked successfully!")
+            messages.success(request, f"Appointment #{appt.id} booked successfully for {appt.appointment_time.strftime('%I:%M %p')}!")
             return redirect('patient_dashboard')
     else:
         form = AppointmentForm(initial=initial_data)
@@ -261,14 +278,15 @@ def patient_tracking(request):
     user_position = 0
 
     if active_appt:
+        # Fetch ALL appointments for this doctor on this day (previous completed, ongoing, waiting, cancelled)
         queue_list = Appointment.objects.filter(
             doctor=active_appt.doctor,
             appointment_date=active_appt.appointment_date
-        ).order_by('id')
+        ).order_by('appointment_time', 'id')
 
         ongoing_appt = queue_list.filter(status='ONGOING').first()
 
-        waiting_queue = list(queue_list.filter(status__in=['ONGOING', 'WAITING']).order_by('-priority', 'id'))
+        waiting_queue = list(queue_list.filter(status__in=['ONGOING', 'WAITING']).order_by('-priority', 'appointment_time', 'id'))
         for idx, item in enumerate(waiting_queue):
             if item.id == active_appt.id:
                 user_position = idx + 1
@@ -283,6 +301,7 @@ def patient_tracking(request):
         'user_position': user_position,
     }
     return render(request, 'patient_tracking.html', context)
+
 
 @patient_required
 def patient_notifications(request):

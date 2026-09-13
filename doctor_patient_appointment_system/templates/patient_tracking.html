@@ -40,6 +40,7 @@
                     <th>Queue Order</th>
                     <th>Appointment ID</th>
                     <th>Doctor</th>
+                    <th>Scheduled / Expected Time</th>
                     <th>Status</th>
                     <th>Notes</th>
                 </tr>
@@ -50,6 +51,9 @@
                     <td>#{{ forloop.counter }}</td>
                     <td style="color: #2563eb;">{{ item.display_id }}</td>
                     <td>Dr. {{ item.doctor.name }}</td>
+                    <td style="font-weight: 600;">
+                        {% if item.expected_time %}{{ item.expected_time|time:"h:i A" }}{% else %}{{ item.appointment_time|time:"h:i A" }}{% endif %}
+                    </td>
                     <td><span class="badge status-{{ item.status|lower }}">{{ item.status }}</span></td>
                     <td>
                         {% if item.id == active_appt.id %}
@@ -60,7 +64,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="text-muted" style="text-align: center; padding: 24px;">No active queue found.</td></tr>
+                <tr><td colspan="6" class="text-muted" style="text-align: center; padding: 24px;">No active queue found for today.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

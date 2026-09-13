@@ -26,17 +26,11 @@
             {% if form.reason.errors %}<div class="errorlist">{{ form.reason.errors }}</div>{% endif %}
         </div>
 
-        <div class="grid-2" style="gap: 12px; margin-bottom: 0;">
-            <div class="form-group">
-                <label for="id_appointment_date">Appointment Date</label>
-                {{ form.appointment_date }}
-                {% if form.appointment_date.errors %}<div class="errorlist">{{ form.appointment_date.errors }}</div>{% endif %}
-            </div>
-            <div class="form-group">
-                <label for="id_appointment_time">Available Time Slot</label>
-                {{ form.appointment_time }}
-                {% if form.appointment_time.errors %}<div class="errorlist">{{ form.appointment_time.errors }}</div>{% endif %}
-            </div>
+        <div class="form-group">
+            <label for="id_appointment_date">Appointment Date</label>
+            {{ form.appointment_date }}
+            {% if form.appointment_date.errors %}<div class="errorlist">{{ form.appointment_date.errors }}</div>{% endif %}
+            <small class="text-muted" style="display: block; margin-top: 4px;">Time slot will be automatically scheduled in FCFS queue order.</small>
         </div>
 
         <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 12px;">Book Appointment</button>
