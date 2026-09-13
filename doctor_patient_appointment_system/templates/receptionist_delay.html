@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="header-bar">
+    <div class="header-title">
+        <h1>Delay & Notifications Management</h1>
+        <p>Apply queue delay adjustments and automatically dispatch notifications to affected patients</p>
+    </div>
+</div>
+
+<div class="card" style="border-top: 4px solid #b45309;">
+    <h3>Broadcast Queue Delay Adjustment</h3>
+    <p class="text-muted" style="margin-bottom: 16px;">
+        Clicking a delay button automatically updates the expected consultation times and creates delay notifications for all waiting patients:
+    </p>
+
+    <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+        <form action="{% url 'apply_delay_action' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="minutes" value="10">
+            <button type="submit" class="btn btn-secondary" style="padding: 12px 24px; font-weight: 700;">⏱️ +10 MIN DELAY</button>
+        </form>
+
+        <form action="{% url 'apply_delay_action' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="minutes" value="20">
+            <button type="submit" class="btn btn-primary" style="padding: 12px 24px; font-weight: 700;">⏱️ +20 MIN DELAY</button>
+        </form>
+
+        <form action="{% url 'apply_delay_action' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="minutes" value="30">
+            <button type="submit" class="btn btn-danger" style="padding: 12px 24px; font-weight: 700;">⏱️ +30 MIN DELAY</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Affected Waiting Queue Status</h3>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Appt ID</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Original Time</th>
+                    <th>Accumulated Delay</th>
+                    <th>Updated Expected Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in waiting_appts %}
+                <tr>
+                    <td style="font-weight: 800; color: #2563eb;">{{ a.display_id }}</td>
+                    <td style="font-weight: 600; color: #0f172a;">{{ a.patient.first_name|default:a.patient.username }} {{ a.patient.last_name }}</td>
+                    <td>Dr. {{ a.doctor.name }}</td>
+                    <td>{{ a.appointment_time|time:"h:i A" }}</td>
+                    <td><span class="badge status-waiting">+{{ a.delay_minutes }} mins</span></td>
+                    <td style="font-weight: 700; color: #2563eb;">
+                        {% if a.expected_time %}{{ a.expected_time|time:"h:i A" }}{% else %}{{ a.appointment_time|time:"h:i A" }}{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted" style="text-align: center; padding: 24px;">No active waiting appointments to delay today.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

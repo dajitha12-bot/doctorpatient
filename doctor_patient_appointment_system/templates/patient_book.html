@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card form-card">
+    <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; color: #0f172a;">Book Appointment</h2>
+        <p class="text-muted" style="margin-top: 4px;">Select doctor specialization, doctor, and preferred time slot</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="id_specialization">Doctor Specialization</label>
+            {{ form.specialization }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_doctor">Select Doctor</label>
+            {{ form.doctor }}
+            {% if form.doctor.errors %}<div class="errorlist">{{ form.doctor.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_reason">Reason for Visit</label>
+            {{ form.reason }}
+            {% if form.reason.errors %}<div class="errorlist">{{ form.reason.errors }}</div>{% endif %}
+        </div>
+
+        <div class="grid-2" style="gap: 12px; margin-bottom: 0;">
+            <div class="form-group">
+                <label for="id_appointment_date">Appointment Date</label>
+                {{ form.appointment_date }}
+                {% if form.appointment_date.errors %}<div class="errorlist">{{ form.appointment_date.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_appointment_time">Available Time Slot</label>
+                {{ form.appointment_time }}
+                {% if form.appointment_time.errors %}<div class="errorlist">{{ form.appointment_time.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 12px;">Book Appointment</button>
+    </form>
+</div>
+
+<script>
+    // Simple specialization filter script
+    document.getElementById('id_specialization').addEventListener('change', function() {
+        const selectedSpec = this.value.toLowerCase();
+        const doctorSelect = document.getElementById('id_doctor');
+        const options = doctorSelect.options;
+        
+        for (let i = 0; i < options.length; i++) {
+            const opt = options[i];
+            if (!selectedSpec || opt.text.toLowerCase().includes(selectedSpec) || opt.value === "") {
+                opt.style.display = "";
+            } else {
+                opt.style.display = "none";
+            }
+        }
+    });
+</script>
+{% endblock %}

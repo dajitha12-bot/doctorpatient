@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="header-bar">
+    <div class="header-title">
+        <h1>Appointments Management</h1>
+        <p>View all appointments, filter, and complete ongoing consultations with one click</p>
+    </div>
+</div>
+
+<div class="card">
+    <form method="get" style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
+        <div style="flex: 1;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by Appointment ID (e.g. #30) or Patient Name..." class="form-control">
+        </div>
+        <div>
+            <select name="status" class="form-control" onchange="this.form.submit()">
+                <option value="ALL" {% if status_filter == 'ALL' %}selected{% endif %}>All Statuses</option>
+                <option value="WAITING" {% if status_filter == 'WAITING' %}selected{% endif %}>Waiting</option>
+                <option value="ONGOING" {% if status_filter == 'ONGOING' %}selected{% endif %}>Ongoing</option>
+                <option value="COMPLETED" {% if status_filter == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Appt ID</th>
+                    <th>Patient Name</th>
+                    <th>Doctor</th>
+                    <th>Specialization</th>
+                    <th>Reason</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in appts %}
+                <tr {% if a.status == 'ONGOING' %}style="background-color: #eff6ff;"{% endif %}>
+                    <td style="font-weight: 800; color: #2563eb;">{{ a.display_id }}</td>
+                    <td style="font-weight: 600; color: #0f172a;">{{ a.patient.first_name|default:a.patient.username }} {{ a.patient.last_name }}</td>
+                    <td>Dr. {{ a.doctor.name }}</td>
+                    <td><span class="badge status-confirmed">{{ a.doctor.specialization }}</span></td>
+                    <td>{{ a.reason|default:"General Checkup" }}</td>
+                    <td>{{ a.appointment_date }} {{ a.appointment_time|time:"h:i A" }}</td>
+                    <td><span class="badge status-{{ a.status|lower }}">{{ a.status }}</span></td>
+                    <td>
+                        {% if a.status == 'ONGOING' or a.status == 'WAITING' %}
+                            <form action="{% url 'complete_appointment_action' a.id %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success" style="font-weight: 600;">
+                                    ✓ COMPLETE APPOINTMENT
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="text-muted" style="font-size: 0.85rem;">Completed</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-muted" style="text-align: center; padding: 24px;">No appointments found matching filter.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="header-bar">
+    <div class="header-title">
+        <h1>Live Queue & Emergency Management</h1>
+        <p>Monitor real-time patient queue and assign emergency priority with one click</p>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Current Live Queue</h3>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Appt ID</th>
+                    <th>Patient Name</th>
+                    <th>Doctor</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in queue %}
+                <tr {% if item.priority == 'EMERGENCY' %}style="background-color: #fef2f2;"{% elif item.status == 'ONGOING' %}style="background-color: #eff6ff;"{% endif %}>
+                    <td style="font-weight: 800; color: #2563eb;">{{ item.display_id }}</td>
+                    <td style="font-weight: 600; color: #0f172a;">{{ item.patient.first_name|default:item.patient.username }} {{ item.patient.last_name }}</td>
+                    <td>Dr. {{ item.doctor.name }} ({{ item.doctor.specialization }})</td>
+                    <td>
+                        {% if item.priority == 'EMERGENCY' %}
+                            <span class="badge status-emergency">🚨 EMERGENCY</span>
+                        {% else %}
+                            <span class="badge status-normal">NORMAL</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge status-{{ item.status|lower }}">{{ item.status }}</span></td>
+                    <td>
+                        {% if item.status == 'WAITING' and item.priority != 'EMERGENCY' %}
+                            <form action="{% url 'mark_emergency_action' item.id %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    🚨 MARK EMERGENCY
+                                </button>
+                            </form>
+                        {% elif item.priority == 'EMERGENCY' %}
+                            <span class="text-muted" style="font-size: 0.85rem; font-weight: 600; color: #dc2626;">Emergency Priority Active</span>
+                        {% else %}
+                            <span class="text-muted" style="font-size: 0.85rem;">Ongoing</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted" style="text-align: center; padding: 24px;">No active queue appointments for today.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

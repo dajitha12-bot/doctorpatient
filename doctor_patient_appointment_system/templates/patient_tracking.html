@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="header-bar">
+    <div class="header-title">
+        <h1>Appointment Tracking</h1>
+        <p>Real-time queue tracking for your active consultation</p>
+    </div>
+</div>
+
+{% if active_appt %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">Currently Ongoing</div>
+        <div class="stat-value" style="color: #059669;">
+            {% if ongoing_appt %}{{ ongoing_appt.display_id }}{% else %}None{% endif %}
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">Your Position</div>
+        <div class="stat-value" style="color: #2563eb;">#{{ user_position }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">Patients Before You</div>
+        <div class="stat-value">{{ patients_ahead }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">Estimated Time</div>
+        <div class="stat-value" style="font-size: 1.4rem;">
+            {% if active_appt.expected_time %}{{ active_appt.expected_time|time:"h:i A" }}{% else %}{{ active_appt.appointment_time|time:"h:i A" }}{% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card mt-20">
+    <h3>Current Live Queue Progress</h3>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Queue Order</th>
+                    <th>Appointment ID</th>
+                    <th>Doctor</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in queue_list %}
+                <tr {% if item.id == active_appt.id %}style="background-color: #eff6ff; font-weight: 700;"{% endif %}>
+                    <td>#{{ forloop.counter }}</td>
+                    <td style="color: #2563eb;">{{ item.display_id }}</td>
+                    <td>Dr. {{ item.doctor.name }}</td>
+                    <td><span class="badge status-{{ item.status|lower }}">{{ item.status }}</span></td>
+                    <td>
+                        {% if item.id == active_appt.id %}
+                            <strong style="color: #2563eb;">👈 YOUR APPOINTMENT</strong>
+                        {% elif item.priority == 'EMERGENCY' %}
+                            <span class="badge status-emergency">EMERGENCY</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted" style="text-align: center; padding: 24px;">No active queue found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 48px 24px;">
+    <h3 style="margin-bottom: 12px; color: #64748b;">No Active Appointment to Track</h3>
+    <p class="text-muted" style="margin-bottom: 20px;">Book an appointment to track live queue position.</p>
+    <a href="{% url 'patient_book' %}" class="btn btn-primary">Book Appointment</a>
+</div>
+{% endif %}
+{% endblock %}

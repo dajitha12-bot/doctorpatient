@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="header-bar">
+    <div class="header-title">
+        <h1>Management & Receptionist Profile</h1>
+        <p>Overview of default doctors, registered patients, and receptionist account information</p>
+    </div>
+</div>
+
+<!-- SECTION TAB BUTTONS -->
+<div style="display: flex; gap: 12px; margin-bottom: 24px;">
+    <button class="btn btn-primary tab-btn" onclick="showTab('doctors-tab', this)">[DOCTORS]</button>
+    <button class="btn btn-secondary tab-btn" onclick="showTab('patients-tab', this)">[PATIENTS]</button>
+    <button class="btn btn-secondary tab-btn" onclick="showTab('profile-tab', this)">[MY PROFILE]</button>
+</div>
+
+<!-- TAB 1: DOCTORS -->
+<div id="doctors-tab" class="tab-content card">
+    <h3>Default Doctors Registry</h3>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Doctor Name</th>
+                    <th>Specialization</th>
+                    <th>Available Days</th>
+                    <th>Available Times</th>
+                    <th>Avg Consultation</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in doctors %}
+                <tr>
+                    <td style="font-weight: 700; color: #0f172a;">Dr. {{ d.name }}</td>
+                    <td><span class="badge status-confirmed">{{ d.specialization }}</span></td>
+                    <td>{{ d.available_days }}</td>
+                    <td>{{ d.available_times }}</td>
+                    <td>{{ d.average_consultation_minutes }} mins</td>
+                    <td>
+                        {% if d.available %}
+                            <span class="badge status-completed">Available</span>
+                        {% else %}
+                            <span class="badge status-emergency">Unavailable</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted" style="text-align: center; padding: 24px;">No doctors found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TAB 2: PATIENTS -->
+<div id="patients-tab" class="tab-content card" style="display: none;">
+    <h3>Registered Patients Registry</h3>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Patient Username</th>
+                    <th>Full Name</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Total Appointments</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in patient_list %}
+                <tr>
+                    <td style="font-weight: 700; color: #2563eb;">{{ p.user.username }}</td>
+                    <td style="font-weight: 600;">{{ p.user.first_name|default:"-" }} {{ p.user.last_name }}</td>
+                    <td>{{ p.user.email|default:"N/A" }}</td>
+                    <td>{{ p.phone }}</td>
+                    <td><span class="badge status-confirmed">{{ p.count }} bookings</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted" style="text-align: center; padding: 24px;">No patients registered yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TAB 3: MY PROFILE -->
+<div id="profile-tab" class="tab-content card form-card" style="display: none;">
+    <div style="text-align: center; margin-bottom: 24px;">
+        <h3 style="font-size: 1.3rem; font-weight: 700; color: #0f172a;">Receptionist Profile</h3>
+        <p class="text-muted">Account details for hospital administration</p>
+    </div>
+
+    <div class="form-group">
+        <label>Username</label>
+        <input type="text" class="form-control" value="{{ receptionist_user.username }}" disabled style="background-color: #f1f5f9;">
+    </div>
+
+    <div class="form-group">
+        <label>Role</label>
+        <input type="text" class="form-control" value="Hospital Receptionist / Admin" disabled style="background-color: #f1f5f9;">
+    </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        <input type="text" class="form-control" value="{{ receptionist_user.email|default:'receptionist@hospital.com' }}" disabled style="background-color: #f1f5f9;">
+    </div>
+
+    <form action="{% url 'logout' %}" method="post" style="margin-top: 20px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" style="width: 100%; padding: 12px;">Sign Out</button>
+    </form>
+</div>
+
+<script>
+    function showTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('btn-primary');
+            b.classList.add('btn-secondary');
+        });
+
+        document.getElementById(tabId).style.display = 'block';
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+    }
+</script>
+{% endblock %}

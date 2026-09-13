@@ -1,13 +1,12 @@
-
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from appointments.models import Doctor
+from appointments.models import Doctor, UserProfile
 
 class Command(BaseCommand):
-    help = 'Populates database with initial Receptionist, Doctors, and Patients'
+    help = 'Populates database with initial Receptionist user, default Doctors, and demo Patients'
 
     def handle(self, *args, **kwargs):
-        # 1. Receptionist / Admin User
+        # 1. Receptionist User
         rec_user, created = User.objects.get_or_create(
             username='receptionist',
             defaults={
@@ -23,44 +22,39 @@ class Command(BaseCommand):
             rec_user.save()
             self.stdout.write(self.style.SUCCESS("Created Receptionist user: receptionist / receptionist123"))
 
-        # 2. Doctors
-        doctors_data = [
-            {'username': 'dr_arun', 'name': 'Arun Kumar', 'specialization': 'Cardiology', 'avg_time': 10},
-            {'username': 'dr_priya', 'name': 'Priya Sharma', 'specialization': 'Neurology', 'avg_time': 15},
-            {'username': 'dr_rajesh', 'name': 'Rajesh Patel', 'specialization': 'Orthopedics', 'avg_time': 12},
-            {'username': 'dr_sunita', 'name': 'Sunita Verma', 'specialization': 'Pediatrics', 'avg_time': 8},
-            {'username': 'dr_vikram', 'name': 'Vikram Singh', 'specialization': 'General Medicine', 'avg_time': 10},
-            {'username': 'dr_ananya', 'name': 'Ananya Roy', 'specialization': 'Dermatology', 'avg_time': 10},
+        UserProfile.objects.get_or_create(
+            user=rec_user,
+            defaults={'user_type': 'RECEPTIONIST', 'phone_number': '+1-555-0199'}
+        )
+
+        # 2. Default Doctors as required
+        default_doctors = [
+            {'name': 'Arun Kumar', 'specialization': 'Cardiology', 'avg_time': 15, 'days': 'Mon - Sat', 'times': '09:00 AM - 04:00 PM'},
+            {'name': 'Priya', 'specialization': 'Dermatology', 'avg_time': 10, 'days': 'Mon - Fri', 'times': '10:00 AM - 05:00 PM'},
+            {'name': 'Ravi', 'specialization': 'Orthopedics', 'avg_time': 15, 'days': 'Mon - Sat', 'times': '09:30 AM - 03:30 PM'},
+            {'name': 'Meena', 'specialization': 'General Medicine', 'avg_time': 10, 'days': 'Mon - Sun', 'times': '08:00 AM - 06:00 PM'},
+            {'name': 'Karthik', 'specialization': 'Neurology', 'avg_time': 20, 'days': 'Tue - Sat', 'times': '10:00 AM - 04:00 PM'},
         ]
 
-        for d in doctors_data:
-            first = d['name'].split()[0]
-            last = d['name'].split()[-1]
-            user, created = User.objects.get_or_create(
-                username=d['username'],
-                defaults={'first_name': first, 'last_name': last, 'email': f"{d['username']}@hospital.com"}
-            )
-            if created:
-                user.set_password('doctor123')
-                user.save()
-
-            doctor, doc_created = Doctor.objects.get_or_create(
-                user=user,
+        for d in default_doctors:
+            doc, doc_created = Doctor.objects.get_or_create(
+                name=d['name'],
+                specialization=d['specialization'],
                 defaults={
-                    'name': d['name'],
-                    'specialization': d['specialization'],
                     'average_consultation_minutes': d['avg_time'],
-                    'available': True
+                    'available': True,
+                    'available_days': d['days'],
+                    'available_times': d['times'],
                 }
             )
             if doc_created:
-                self.stdout.write(self.style.SUCCESS(f"Created Doctor: Dr. {d['name']} ({d['specialization']})"))
+                self.stdout.write(self.style.SUCCESS(f"Created Default Doctor: Dr. {d['name']} ({d['specialization']})"))
 
-        # 3. Patients
+        # 3. Patient Demo Users
         patients_data = [
-            {'username': 'patient1', 'first_name': 'Rahul', 'last_name': 'Sharma', 'email': 'patient1@gmail.com'},
-            {'username': 'patient2', 'first_name': 'Sneha', 'last_name': 'Gupta', 'email': 'patient2@gmail.com'},
-            {'username': 'patient3', 'first_name': 'Amit', 'last_name': 'Verma', 'email': 'patient3@gmail.com'},
+            {'username': 'patient1', 'first_name': 'Rahul', 'last_name': 'Sharma', 'email': 'patient1@gmail.com', 'phone': '9876543210'},
+            {'username': 'patient2', 'first_name': 'Sneha', 'last_name': 'Gupta', 'email': 'patient2@gmail.com', 'phone': '9876543211'},
+            {'username': 'patient3', 'first_name': 'Amit', 'last_name': 'Verma', 'email': 'patient3@gmail.com', 'phone': '9876543212'},
         ]
 
         for p in patients_data:
@@ -72,3 +66,8 @@ class Command(BaseCommand):
                 user.set_password('patient123')
                 user.save()
                 self.stdout.write(self.style.SUCCESS(f"Created Patient: {p['username']} / patient123"))
+
+            UserProfile.objects.get_or_create(
+                user=user,
+                defaults={'user_type': 'PATIENT', 'phone_number': p['phone']}
+            )

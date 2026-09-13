@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="header-bar">
+    <div class="header-title">
+        <h1>Notifications</h1>
+        <p>System alerts regarding your bookings, queue position, delays, and turn updates</p>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Notification Inbox</h3>
+    {% if notifications %}
+        {% for n in notifications %}
+            <div class="alert {% if n.notification_type == 'EMERGENCY' or n.notification_type == 'DELAY' %}alert-warning{% else %}alert-success{% endif %}" style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: #64748b; margin-bottom: 4px;">
+                        {{ n.created_at|date:"d M Y, h:i A" }} — <span class="badge status-confirmed">{{ n.notification_type }}</span>
+                    </div>
+                    <div style="font-size: 0.95rem;">{{ n.message }}</div>
+                </div>
+                {% if not n.is_read %}
+                    <a href="{% url 'mark_notification_read' n.id %}" class="btn btn-sm btn-secondary" style="white-space: nowrap; margin-left: 16px;">Mark as Read</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted" style="text-align: center; padding: 24px;">No notifications found.</p>
+    {% endif %}
+</div>
+{% endblock %}
