@@ -1,11 +1,65 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="card form-card">
-    <h2>Patient Registration</h2>
-    <form method="post">
+    <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; color: #0f172a;">Patient Registration</h2>
+        <p class="text-muted" style="margin-top: 4px;">Create your account to book hospital appointments</p>
+    </div>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" novalidate>
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Register</button>
+
+        <div class="form-group">
+            <label for="id_username">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="errorlist">{{ form.username.errors }}</div>{% endif %}
+        </div>
+
+        <div class="grid-2" style="gap: 12px; margin-bottom: 0;">
+            <div class="form-group">
+                <label for="id_first_name">First Name</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}<div class="errorlist">{{ form.first_name.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_last_name">Last Name</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}<div class="errorlist">{{ form.last_name.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="id_email">Email Address</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="errorlist">{{ form.email.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_password">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}<div class="errorlist">{{ form.password.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_confirm_password">Confirm Password</label>
+            {{ form.confirm_password }}
+            {% if form.confirm_password.errors %}<div class="errorlist">{{ form.confirm_password.errors }}</div>{% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 8px;">Register Account</button>
     </form>
+
+    <div style="text-align: center; margin-top: 20px; font-size: 0.9rem;">
+        <span class="text-muted">Already have an account?</span>
+        <a href="{% url 'login' %}" style="color: #2563eb; font-weight: 600; text-decoration: none; margin-left: 4px;">Sign in</a>
+    </div>
 </div>
 {% endblock %}

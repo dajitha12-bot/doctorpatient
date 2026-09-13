@@ -1,25 +1,46 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Search & Select Doctors</h2>
+<div class="header-bar">
+    <div class="header-title">
+        <h1>Search & Select Doctors</h1>
+        <p>Find specialized medical professionals and book your appointment</p>
+    </div>
+</div>
 
-<form method="get" style="margin-bottom: 20px; display: flex; gap: 10px;">
-    <input type="text" name="q" value="{{ query }}" placeholder="Search by Doctor Name or Specialization category..." class="form-control" style="max-width: 400px;">
-    <button type="submit" class="btn btn-primary">Search</button>
-</form>
+<div class="card">
+    <form method="get" style="display: flex; gap: 12px; align-items: center;">
+        <div style="flex-grow: 1;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search doctor name or specialization category (e.g. Cardiology, Neurology)..." class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Search</span>
+        </button>
+    </form>
+</div>
 
-<div class="dashboard-grid">
+<div class="grid-2">
     {% for doc in doctors %}
-    <div class="card highlight">
-        <h3>Dr. {{ doc.name }}</h3>
-        <p><strong>Specialization Category:</strong> <span class="badge status-confirmed">{{ doc.specialization }}</span></p>
-        <p><strong>Avg Consultation Time:</strong> {{ doc.average_consultation_minutes }} mins</p>
-        <p><strong>Status:</strong> <span class="badge status-completed">Available</span></p>
-        <br>
-        <a href="{% url 'book_appointment' %}?doctor_id={{ doc.id }}" class="btn btn-success">Book Appointment with Dr. {{ doc.name }}</a>
+    <div class="card" style="border-top: 4px solid #2563eb;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Dr. {{ doc.name }}</h3>
+                <span class="badge status-confirmed">{{ doc.specialization }}</span>
+            </div>
+            <span class="badge status-completed">Available</span>
+        </div>
+        
+        <p class="text-muted" style="margin-bottom: 20px;">
+            <strong>Average Consultation:</strong> {{ doc.average_consultation_minutes }} mins per patient
+        </p>
+
+        <a href="{% url 'book_appointment' %}?doctor_id={{ doc.id }}" class="btn btn-primary" style="width: 100%;">
+            <span>Book Appointment with Dr. {{ doc.name }}</span>
+        </a>
     </div>
     {% empty %}
-    <div class="card">
-        <p>No doctors found matching your search.</p>
+    <div class="card" style="grid-column: span 2; text-align: center; padding: 40px;">
+        <p class="text-muted">No doctors found matching your search term.</p>
     </div>
     {% endfor %}
 </div>

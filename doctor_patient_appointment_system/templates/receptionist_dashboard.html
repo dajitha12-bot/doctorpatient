@@ -1,84 +1,133 @@
 {% extends 'base.html' %}
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <h2>Receptionist & Admin Dashboard</h2>
-    <div>
-        <a href="{% url 'add_emergency' %}" class="btn btn-danger">🚨 Add Emergency Patient</a>
-        <a href="/admin/" target="_blank" class="btn btn-primary">Open Django Admin</a>
+<div class="header-bar">
+    <div class="header-title">
+        <h1>Receptionist & Admin Dashboard</h1>
+        <p>Monitor hospital queues, patient check-ins, and emergency allocations</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <a href="{% url 'add_emergency' %}" class="btn btn-danger">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+            <span>Add Emergency</span>
+        </a>
+        <a href="/admin/" target="_blank" class="btn btn-secondary">Open Django Admin</a>
     </div>
 </div>
 
-<div class="dashboard-grid mt-20">
-    <div class="card">
-        <h3>Hospital Overview Stats</h3>
-        <p><strong>Total Doctors:</strong> {{ total_doctors }}</p>
-        <p><strong>Total Registered Patients:</strong> {{ total_patients }}</p>
-        <p><strong>Today's Appointments:</strong> {{ today_total }}</p>
-        <p><strong>Currently Waiting Patients:</strong> {{ waiting_count }}</p>
-        <p><strong>Emergency Cases Today:</strong> {{ emergency_count }}</p>
+<!-- OVERVIEW STAT WIDGETS (Acme Style) -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>Total Doctors</span>
+        </div>
+        <div class="stat-value">{{ total_doctors }}</div>
     </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Registered Patients</span>
+        </div>
+        <div class="stat-value">{{ total_patients }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>Today's Appointments</span>
+        </div>
+        <div class="stat-value">{{ today_total }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Waiting Patients</span>
+        </div>
+        <div class="stat-value">{{ waiting_count }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+            <span>Emergency Cases Today</span>
+        </div>
+        <div class="stat-value" style="color: #dc2626;">{{ emergency_count }}</div>
+    </div>
+</div>
 
+<div class="grid-2">
+    <!-- PATIENT CHECK-IN CONTROL -->
     <div class="card">
         <h3>Patient Check-In Control</h3>
-        <p>Confirmed appointments waiting to check-in today:</p>
-        <table class="table">
-            <tr>
-                <th>Patient</th>
-                <th>Doctor</th>
-                <th>Time</th>
-                <th>Action</th>
-            </tr>
-            {% for a in confirmed_appts %}
-            <tr>
-                <td>{{ a.patient.username }}</td>
-                <td>Dr. {{ a.doctor.name }}</td>
-                <td>{{ a.appointment_time }}</td>
-                <td>
-                    <a href="{% url 'receptionist_check_in' a.id %}" class="btn btn-success">Check-In Patient</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4">No pending check-ins today.</td></tr>
-            {% endfor %}
-        </table>
+        <p class="text-muted" style="margin-bottom: 14px;">Confirmed appointments pending check-in today:</p>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in confirmed_appts %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ a.patient.username }}</td>
+                        <td>Dr. {{ a.doctor.name }}</td>
+                        <td>{{ a.appointment_time }}</td>
+                        <td>
+                            <a href="{% url 'receptionist_check_in' a.id %}" class="btn btn-sm btn-success">Check-In</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-muted" style="text-align: center; padding: 20px;">No pending check-ins today.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 
-<div class="card mt-20">
-    <h3>Live Queue Status by Doctor</h3>
-    <form method="get" style="margin-bottom: 15px;">
-        <label><strong>Select Doctor to Monitor Queue:</strong></label>
-        <select name="doctor_id" onchange="this.form.submit()" class="form-control" style="max-width: 350px; display: inline-block; margin-left: 10px;">
-            {% for doc in doctors %}
-                <option value="{{ doc.id }}" {% if selected_doctor.id == doc.id %}selected{% endif %}>
-                    Dr. {{ doc.name }} ({{ doc.specialization }})
-                </option>
-            {% endfor %}
-        </select>
-    </form>
+    <!-- LIVE QUEUE MONITOR BY DOCTOR -->
+    <div class="card">
+        <h3>Live Queue Monitor</h3>
+        <form method="get" style="margin-bottom: 16px;">
+            <label style="font-weight: 600; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 6px;">Select Doctor Queue:</label>
+            <select name="doctor_id" onchange="this.form.submit()" class="form-control">
+                {% for doc in doctors %}
+                    <option value="{{ doc.id }}" {% if selected_doctor.id == doc.id %}selected{% endif %}>
+                        Dr. {{ doc.name }} ({{ doc.specialization }})
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
 
-    {% if selected_doctor %}
-    <h4>Live Queue for Dr. {{ selected_doctor.name }} ({{ selected_doctor.specialization }})</h4>
-    <table class="table">
-        <tr>
-            <th>Token</th>
-            <th>Patient</th>
-            <th>Priority</th>
-            <th>Status</th>
-            <th>Arrived At</th>
-        </tr>
-        {% for q in doctor_queue %}
-        <tr {% if q.status == 'CONSULTING' %}style="background-color: #e6ffed;"{% endif %}>
-            <td><strong>{{ q.token_number }}</strong></td>
-            <td>{{ q.patient.username }}</td>
-            <td><span class="badge status-{{ q.priority|lower }}">{{ q.priority }}</span></td>
-            <td><span class="badge status-{{ q.status|lower }}">{{ q.status }}</span></td>
-            <td>{{ q.arrived_at|date:"H:i" }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5">No active queue for Dr. {{ selected_doctor.name }} right now.</td></tr>
-        {% endfor %}
-    </table>
-    {% endif %}
+        {% if selected_doctor %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Patient</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Arrived</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in doctor_queue %}
+                    <tr {% if q.status == 'CONSULTING' %}style="background-color: #f0fdf4;"{% endif %}>
+                        <td style="font-weight: 700; color: #1e40af;">{{ q.token_number }}</td>
+                        <td>{{ q.patient.username }}</td>
+                        <td><span class="badge status-{{ q.priority|lower }}">{{ q.priority }}</span></td>
+                        <td><span class="badge status-{{ q.status|lower }}">{{ q.status }}</span></td>
+                        <td class="text-muted">{{ q.arrived_at|date:"H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-muted" style="text-align: center; padding: 20px;">No active queue for Dr. {{ selected_doctor.name }} right now.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

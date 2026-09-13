@@ -1,30 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="card form-card">
-    <h2>🚨 Add Emergency Patient</h2>
-    <p class="text-danger">This patient will be prioritized over normal waiting patients.</p>
+<div class="card form-card" style="border-top: 4px solid #dc2626;">
+    <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; color: #dc2626; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>Add Emergency Patient</span>
+        </h2>
+        <p class="text-danger" style="margin-top: 4px; font-weight: 500;">
+            This patient will receive immediate priority in the doctor's queue.
+        </p>
+    </div>
+
     <form method="post">
         {% csrf_token %}
         {% if user.is_staff or user.username == 'receptionist' %}
-        <p>
-            <label>Select Doctor:</label>
+        <div class="form-group">
+            <label>Select Doctor</label>
             <select name="doctor" required class="form-control">
                 {% for d in doctors %}
                     <option value="{{ d.id }}">Dr. {{ d.name }} ({{ d.specialization }})</option>
                 {% endfor %}
             </select>
-        </p>
+        </div>
         {% endif %}
-        <p>
-            <label>Select Patient:</label>
+
+        <div class="form-group">
+            <label>Select Patient</label>
             <select name="patient" required class="form-control">
-                <option value="">-- Choose Patient --</option>
+                <option value="">-- Choose Registered Patient --</option>
                 {% for p in patients %}
-                    <option value="{{ p.id }}">{{ p.username }} ({{ p.get_full_name }})</option>
+                    <option value="{{ p.id }}">{{ p.username }} {% if p.get_full_name %}({{ p.get_full_name }}){% endif %}</option>
                 {% endfor %}
             </select>
-        </p>
-        <button type="submit" class="btn btn-danger">Add Emergency Case</button>
+        </div>
+
+        <button type="submit" class="btn btn-danger" style="width: 100%; padding: 12px; margin-top: 8px;">Add Emergency Case</button>
     </form>
 </div>
 {% endblock %}

@@ -1,27 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="card form-card">
-    <h2>Book Appointment</h2>
-    <p>Select your doctor (displayed with their specialist category) and preferred date/time.</p>
+    <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; color: #0f172a;">Book Appointment</h2>
+        <p class="text-muted" style="margin-top: 4px;">Choose your doctor, date, and preferred time slot</p>
+    </div>
+
     <form method="post">
         {% csrf_token %}
-        <p>
-            <label for="id_doctor">Doctor & Specialization:</label>
+
+        <div class="form-group">
+            <label for="id_doctor">Doctor & Specialization</label>
             {{ form.doctor }}
-        </p>
-        <p>
-            <label for="id_appointment_date">Appointment Date:</label>
-            {{ form.appointment_date }}
-        </p>
-        <p>
-            <label for="id_appointment_time">Appointment Time:</label>
-            {{ form.appointment_time }}
-        </p>
-        <p>
-            <label for="id_reason">Reason for Visit:</label>
+            {% if form.doctor.errors %}<div class="errorlist">{{ form.doctor.errors }}</div>{% endif %}
+        </div>
+
+        <div class="grid-2" style="gap: 12px; margin-bottom: 0;">
+            <div class="form-group">
+                <label for="id_appointment_date">Appointment Date</label>
+                {{ form.appointment_date }}
+                {% if form.appointment_date.errors %}<div class="errorlist">{{ form.appointment_date.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_appointment_time">Appointment Time</label>
+                {{ form.appointment_time }}
+                {% if form.appointment_time.errors %}<div class="errorlist">{{ form.appointment_time.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="id_reason">Reason for Visit (Optional)</label>
             {{ form.reason }}
-        </p>
-        <button type="submit" class="btn btn-primary">Book Appointment</button>
+            {% if form.reason.errors %}<div class="errorlist">{{ form.reason.errors }}</div>{% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 8px;">Confirm Booking</button>
     </form>
 </div>
 {% endblock %}
