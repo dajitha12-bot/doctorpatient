@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from .models import Doctor, Appointment, Notification, UserProfile
 from .forms import UserRegisterForm, AppointmentForm, PatientProfileForm
 
