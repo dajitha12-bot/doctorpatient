@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card form-card">
+    <h2>Book Appointment</h2>
+    <p>Select your doctor (displayed with their specialist category) and preferred date/time.</p>
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            <label for="id_doctor">Doctor & Specialization:</label>
+            {{ form.doctor }}
+        </p>
+        <p>
+            <label for="id_appointment_date">Appointment Date:</label>
+            {{ form.appointment_date }}
+        </p>
+        <p>
+            <label for="id_appointment_time">Appointment Time:</label>
+            {{ form.appointment_time }}
+        </p>
+        <p>
+            <label for="id_reason">Reason for Visit:</label>
+            {{ form.reason }}
+        </p>
+        <button type="submit" class="btn btn-primary">Book Appointment</button>
+    </form>
+</div>
+{% endblock %}

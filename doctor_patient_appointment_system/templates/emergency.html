@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card form-card">
+    <h2>🚨 Add Emergency Patient</h2>
+    <p class="text-danger">This patient will be prioritized over normal waiting patients.</p>
+    <form method="post">
+        {% csrf_token %}
+        {% if user.is_staff or user.username == 'receptionist' %}
+        <p>
+            <label>Select Doctor:</label>
+            <select name="doctor" required class="form-control">
+                {% for d in doctors %}
+                    <option value="{{ d.id }}">Dr. {{ d.name }} ({{ d.specialization }})</option>
+                {% endfor %}
+            </select>
+        </p>
+        {% endif %}
+        <p>
+            <label>Select Patient:</label>
+            <select name="patient" required class="form-control">
+                <option value="">-- Choose Patient --</option>
+                {% for p in patients %}
+                    <option value="{{ p.id }}">{{ p.username }} ({{ p.get_full_name }})</option>
+                {% endfor %}
+            </select>
+        </p>
+        <button type="submit" class="btn btn-danger">Add Emergency Case</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>Receptionist & Admin Dashboard</h2>
+    <div>
+        <a href="{% url 'add_emergency' %}" class="btn btn-danger">🚨 Add Emergency Patient</a>
+        <a href="/admin/" target="_blank" class="btn btn-primary">Open Django Admin</a>
+    </div>
+</div>
+
+<div class="dashboard-grid mt-20">
+    <div class="card">
+        <h3>Hospital Overview Stats</h3>
+        <p><strong>Total Doctors:</strong> {{ total_doctors }}</p>
+        <p><strong>Total Registered Patients:</strong> {{ total_patients }}</p>
+        <p><strong>Today's Appointments:</strong> {{ today_total }}</p>
+        <p><strong>Currently Waiting Patients:</strong> {{ waiting_count }}</p>
+        <p><strong>Emergency Cases Today:</strong> {{ emergency_count }}</p>
+    </div>
+
+    <div class="card">
+        <h3>Patient Check-In Control</h3>
+        <p>Confirmed appointments waiting to check-in today:</p>
+        <table class="table">
+            <tr>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Time</th>
+                <th>Action</th>
+            </tr>
+            {% for a in confirmed_appts %}
+            <tr>
+                <td>{{ a.patient.username }}</td>
+                <td>Dr. {{ a.doctor.name }}</td>
+                <td>{{ a.appointment_time }}</td>
+                <td>
+                    <a href="{% url 'receptionist_check_in' a.id %}" class="btn btn-success">Check-In Patient</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No pending check-ins today.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="card mt-20">
+    <h3>Live Queue Status by Doctor</h3>
+    <form method="get" style="margin-bottom: 15px;">
+        <label><strong>Select Doctor to Monitor Queue:</strong></label>
+        <select name="doctor_id" onchange="this.form.submit()" class="form-control" style="max-width: 350px; display: inline-block; margin-left: 10px;">
+            {% for doc in doctors %}
+                <option value="{{ doc.id }}" {% if selected_doctor.id == doc.id %}selected{% endif %}>
+                    Dr. {{ doc.name }} ({{ doc.specialization }})
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if selected_doctor %}
+    <h4>Live Queue for Dr. {{ selected_doctor.name }} ({{ selected_doctor.specialization }})</h4>
+    <table class="table">
+        <tr>
+            <th>Token</th>
+            <th>Patient</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Arrived At</th>
+        </tr>
+        {% for q in doctor_queue %}
+        <tr {% if q.status == 'CONSULTING' %}style="background-color: #e6ffed;"{% endif %}>
+            <td><strong>{{ q.token_number }}</strong></td>
+            <td>{{ q.patient.username }}</td>
+            <td><span class="badge status-{{ q.priority|lower }}">{{ q.priority }}</span></td>
+            <td><span class="badge status-{{ q.status|lower }}">{{ q.status }}</span></td>
+            <td>{{ q.arrived_at|date:"H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No active queue for Dr. {{ selected_doctor.name }} right now.</td></tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</div>
+{% endblock %}

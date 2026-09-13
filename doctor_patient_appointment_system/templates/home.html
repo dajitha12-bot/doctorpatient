@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="text-align: center; margin-top: 50px;">
+    <h1>Welcome to the Hospital Appointment System</h1>
+    <p>Please login or register to access patient, doctor, or receptionist portals.</p>
+    <br>
+    <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+    <a href="{% url 'register' %}" class="btn">Register Patient</a>
+</div>
+{% endblock %}

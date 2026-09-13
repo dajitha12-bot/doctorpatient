@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Doctor-Patient Tracker</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><a href="{% url 'home' %}" style="color:white; text-decoration:none;">Hospital Tracker</a></div>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                {% if user.is_staff or user.username == 'receptionist' %}
+                    <a href="{% url 'receptionist_dashboard' %}">Reception Dashboard</a>
+                    <a href="{% url 'add_emergency' %}">Add Emergency</a>
+                    <a href="/admin/" target="_blank">Django Admin</a>
+                {% elif user.doctor %}
+                    <a href="{% url 'doctor_dashboard' %}">Doctor Dashboard</a>
+                {% else %}
+                    <a href="{% url 'doctors_list' %}">Search Doctors</a>
+                    <a href="{% url 'patient_dashboard' %}">Dashboard</a>
+                    <a href="{% url 'book_appointment' %}">Book Appointment</a>
+                {% endif %}
+                <span>| Hello, {{ user.username }}</span> | 
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-link">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'register' %}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+    <script src="/static/js/queue.js"></script>
+</body>
+</html>

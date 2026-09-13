@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>Doctor Dashboard - Dr. {{ doctor.name }} ({{ doctor.specialization }})</h2>
+    <a href="{% url 'add_emergency' %}" class="btn btn-danger">🚨 Add Emergency Patient</a>
+</div>
+
+<div class="dashboard-grid">
+    <!-- CURRENT CONSULTATION -->
+    <div class="card highlight">
+        <h3>Currently Serving</h3>
+        {% if current_consulting %}
+            <div class="token-box">
+                <div class="token-number">{{ current_consulting.token_number }}</div>
+                <p>{{ current_consulting.patient.get_full_name|default:current_consulting.patient.username }}</p>
+                {% if current_consulting.priority == 'EMERGENCY' %}
+                    <span class="badge status-emergency">EMERGENCY</span>
+                {% endif %}
+            </div>
+            <br>
+            <form action="{% url 'complete_consultation' current_consulting.id %}" method="post">
+                {% csrf_token %}
+                <button class="btn btn-success" style="width: 100%;">Complete Consultation</button>
+            </form>
+        {% else %}
+            <p>No patient currently in consultation.</p>
+        {% endif %}
+        
+        <br>
+        <form action="{% url 'call_next' %}" method="post">
+            {% csrf_token %}
+            <button class="btn btn-primary" style="width: 100%; font-size: 1.2em; padding: 15px;">CALL NEXT PATIENT</button>
+        </form>
+    </div>
+
+    <!-- STATS -->
+    <div class="card">
+        <h3>Queue Stats</h3>
+        <p><strong>Today's Total Patients:</strong> {{ today_total }}</p>
+        <p><strong>Waiting Patients:</strong> {{ waiting_count }}</p>
+        <p><strong>Average Consultation Time:</strong> {{ doctor.average_consultation_minutes }} min</p>
+    </div>
+</div>
+
+<div class="card mt-20">
+    <h3>Live Patient Queue</h3>
+    <table class="table">
+        <tr>
+            <th>Token</th>
+            <th>Patient</th>
+            <th>Priority</th>
+            <th>Status</th>
+        </tr>
+        {% if current_consulting %}
+        <tr style="background-color: #e6ffed;">
+            <td><strong>{{ current_consulting.token_number }}</strong></td>
+            <td>{{ current_consulting.patient.username }}</td>
+            <td><span class="badge status-{{ current_consulting.priority|lower }}">{{ current_consulting.priority }}</span></td>
+            <td><strong>CONSULTING</strong></td>
+        </tr>
+        {% endif %}
+        {% for w in waiting_patients %}
+        <tr>
+            <td>{{ w.token_number }}</td>
+            <td>{{ w.patient.username }}</td>
+            <td><span class="badge status-{{ w.priority|lower }}">{{ w.priority }}</span></td>
+            <td>WAITING</td>
+        </tr>
+        {% empty %}
+        {% if not current_consulting %}
+            <tr><td colspan="4">No patients in queue.</td></tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+</div>
+<script>
+    setInterval(() => {
+        window.location.reload();
+    }, 10000);
+</script>
+{% endblock %}
