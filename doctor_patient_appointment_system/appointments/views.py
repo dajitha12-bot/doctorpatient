@@ -461,6 +461,24 @@ def mark_emergency_action(request, appt_id):
         appt = get_object_or_404(Appointment, id=appt_id)
         delay = int(request.POST.get('delay_minutes', 15))
 
+        # Automatically mark any current ONGOING appointment for this doctor as COMPLETED
+        current_ongoing = Appointment.objects.filter(
+            doctor=appt.doctor,
+            appointment_date=appt.appointment_date,
+            status='ONGOING'
+        ).exclude(id=appt.id)
+
+        for prev in current_ongoing:
+            prev.status = 'COMPLETED'
+            prev.completed_at = timezone.now()
+            prev.save()
+            Notification.objects.create(
+                patient=prev.patient,
+                notification_type='COMPLETED',
+                message=f"Your appointment #{prev.id} with Dr. {prev.doctor.name} has been COMPLETED so Dr. {prev.doctor.name} can take an emergency patient."
+            )
+
+        # Set emergency patient to ONGOING with EMERGENCY priority
         appt.priority = 'EMERGENCY'
         appt.status = 'ONGOING'
         appt.save()
@@ -469,14 +487,14 @@ def mark_emergency_action(request, appt_id):
         Notification.objects.create(
             patient=appt.patient,
             notification_type='EMERGENCY',
-            message=f"🚨 EMERGENCY PRIORITY: Your appointment #{appt.id} has been marked as Emergency Priority and is now ONGOING."
+            message=f"🚨 EMERGENCY PRIORITY: Your appointment #{appt.id} has been marked as Emergency Priority and is now ONGOING with Dr. {appt.doctor.name}."
         )
 
-        # Apply delay to all other active/waiting patients of the same doctor
+        # Apply delay to remaining WAITING patients of the same doctor
         other_appts = Appointment.objects.filter(
             doctor=appt.doctor,
             appointment_date=appt.appointment_date,
-            status__in=['WAITING', 'ONGOING']
+            status='WAITING'
         ).exclude(id=appt.id)
 
         for other in other_appts:
@@ -484,8 +502,6 @@ def mark_emergency_action(request, appt_id):
             if other.expected_time:
                 dt = datetime.combine(other.appointment_date, other.expected_time) + timedelta(minutes=delay)
                 other.expected_time = dt.time()
-            if other.status == 'ONGOING':
-                other.status = 'WAITING'
             other.save()
 
             new_time_str = other.expected_time.strftime('%I:%M %p') if other.expected_time else 'updated time'
@@ -495,7 +511,7 @@ def mark_emergency_action(request, appt_id):
                 message=f"🚨 EMERGENCY ALERT: An emergency patient was prioritized for Dr. {appt.doctor.name}. Your appointment #{other.id} is delayed by approx {delay} mins. Updated time: {new_time_str}."
             )
 
-        messages.success(request, f"Appointment #{appt.id} marked EMERGENCY & set to ONGOING. Applied +{delay} MIN delay to remaining patients.")
+        messages.success(request, f"Appointment #{appt.id} marked EMERGENCY & set to ONGOING for Dr. {appt.doctor.name}. Previous ongoing patient marked COMPLETED.")
     return redirect('receptionist_queue')
 
 
