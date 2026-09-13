@@ -5,7 +5,7 @@ from datetime import time, timedelta
 from appointments.models import Doctor, UserProfile, Appointment, Notification
 
 class Command(BaseCommand):
-    help = 'Populates database with initial Receptionist user, default Doctors, demo Patients, and sample Appointments'
+    help = 'Populates database with initial Receptionist user, default Doctors, demo Patients, and sample Appointments for all doctors'
 
     def handle(self, *args, **kwargs):
         # 1. Receptionist User
@@ -29,13 +29,15 @@ class Command(BaseCommand):
             defaults={'user_type': 'RECEPTIONIST', 'phone_number': '+1-555-0199'}
         )
 
-        # 2. Default Doctors
+        # 2. Default Doctors (Including Rajesh Patel & Sunita Verma)
         default_doctors = [
             {'name': 'Arun Kumar', 'specialization': 'Cardiology', 'avg_time': 15, 'days': 'Mon - Sat', 'times': '09:00 AM - 04:00 PM'},
             {'name': 'Priya', 'specialization': 'Dermatology', 'avg_time': 10, 'days': 'Mon - Fri', 'times': '10:00 AM - 05:00 PM'},
             {'name': 'Ravi', 'specialization': 'Orthopedics', 'avg_time': 15, 'days': 'Mon - Sat', 'times': '09:30 AM - 03:30 PM'},
             {'name': 'Meena', 'specialization': 'General Medicine', 'avg_time': 10, 'days': 'Mon - Sun', 'times': '08:00 AM - 06:00 PM'},
             {'name': 'Karthik', 'specialization': 'Neurology', 'avg_time': 20, 'days': 'Tue - Sat', 'times': '10:00 AM - 04:00 PM'},
+            {'name': 'Sunita Verma', 'specialization': 'Pediatrics', 'avg_time': 10, 'days': 'Mon - Sat', 'times': '09:00 AM - 05:00 PM'},
+            {'name': 'Rajesh Patel', 'specialization': 'Orthopedics', 'avg_time': 15, 'days': 'Mon - Sat', 'times': '09:00 AM - 04:00 PM'},
         ]
 
         doctors_dict = {}
@@ -80,76 +82,31 @@ class Command(BaseCommand):
             )
             users_dict[p['username']] = user
 
-        # 4. Sample Demo Appointments (ONGOING, WAITING, COMPLETED, CANCELLED, EMERGENCY)
+        # 4. Sample Demo Appointments across ALL doctors for today (Completed, Ongoing, Waiting)
         today = timezone.now().date()
 
         sample_appts = [
-            {
-                'patient': users_dict['patient1'],
-                'doctor': doctors_dict['Arun Kumar'],
-                'date': today,
-                'time': time(9, 30),
-                'expected_time': time(9, 30),
-                'reason': 'Chest discomfort & cardiac checkup',
-                'status': 'ONGOING',
-                'priority': 'NORMAL',
-                'token': 'T-101'
-            },
-            {
-                'patient': users_dict['patient2'],
-                'doctor': doctors_dict['Arun Kumar'],
-                'date': today,
-                'time': time(9, 45),
-                'expected_time': time(9, 45),
-                'reason': 'Acute shortness of breath',
-                'status': 'WAITING',
-                'priority': 'EMERGENCY',
-                'token': 'T-102'
-            },
-            {
-                'patient': users_dict['patient3'],
-                'doctor': doctors_dict['Arun Kumar'],
-                'date': today,
-                'time': time(10, 0),
-                'expected_time': time(10, 15),
-                'reason': 'Routine ECG evaluation',
-                'status': 'WAITING',
-                'priority': 'NORMAL',
-                'token': 'T-103'
-            },
-            {
-                'patient': users_dict['patient4'],
-                'doctor': doctors_dict['Meena'],
-                'date': today,
-                'time': time(9, 0),
-                'expected_time': time(9, 0),
-                'reason': 'Fever & flu symptom treatment',
-                'status': 'COMPLETED',
-                'priority': 'NORMAL',
-                'token': 'T-100'
-            },
-            {
-                'patient': users_dict['patient5'],
-                'doctor': doctors_dict['Karthik'],
-                'date': today,
-                'time': time(10, 30),
-                'expected_time': time(10, 30),
-                'reason': 'Migraine & headache evaluation',
-                'status': 'WAITING',
-                'priority': 'NORMAL',
-                'token': 'T-104'
-            },
-            {
-                'patient': users_dict['patient3'],
-                'doctor': doctors_dict['Ravi'],
-                'date': today,
-                'time': time(11, 0),
-                'expected_time': time(11, 0),
-                'reason': 'Knee joint stiffness',
-                'status': 'CANCELLED',
-                'priority': 'NORMAL',
-                'token': 'T-105'
-            },
+            # Dr. Arun Kumar
+            {'patient': users_dict['patient1'], 'doctor': doctors_dict['Arun Kumar'], 'date': today, 'time': time(9, 0), 'expected_time': time(9, 0), 'reason': 'Routine Checkup', 'status': 'COMPLETED', 'priority': 'NORMAL', 'token': 'T-101'},
+            {'patient': users_dict['patient2'], 'doctor': doctors_dict['Arun Kumar'], 'date': today, 'time': time(9, 15), 'expected_time': time(9, 15), 'reason': 'Cardiac Consultation', 'status': 'ONGOING', 'priority': 'NORMAL', 'token': 'T-102'},
+            {'patient': users_dict['patient3'], 'doctor': doctors_dict['Arun Kumar'], 'date': today, 'time': time(9, 30), 'expected_time': time(9, 30), 'reason': 'Chest Pain Evaluation', 'status': 'WAITING', 'priority': 'EMERGENCY', 'token': 'T-103'},
+
+            # Dr. Rajesh Patel
+            {'patient': users_dict['patient4'], 'doctor': doctors_dict['Rajesh Patel'], 'date': today, 'time': time(8, 30), 'expected_time': time(8, 30), 'reason': 'Fracture Checkup', 'status': 'COMPLETED', 'priority': 'NORMAL', 'token': 'T-201'},
+            {'patient': users_dict['patient5'], 'doctor': doctors_dict['Rajesh Patel'], 'date': today, 'time': time(8, 45), 'expected_time': time(8, 45), 'reason': 'Joint Stiffness', 'status': 'ONGOING', 'priority': 'NORMAL', 'token': 'T-202'},
+
+            # Dr. Sunita Verma
+            {'patient': users_dict['patient1'], 'doctor': doctors_dict['Sunita Verma'], 'date': today, 'time': time(8, 30), 'expected_time': time(8, 30), 'reason': 'Pediatric Allergy Check', 'status': 'COMPLETED', 'priority': 'NORMAL', 'token': 'T-301'},
+            {'patient': users_dict['patient2'], 'doctor': doctors_dict['Sunita Verma'], 'date': today, 'time': time(8, 45), 'expected_time': time(8, 45), 'reason': 'Child Vaccination', 'status': 'ONGOING', 'priority': 'NORMAL', 'token': 'T-302'},
+
+            # Dr. Priya
+            {'patient': users_dict['patient3'], 'doctor': doctors_dict['Priya'], 'date': today, 'time': time(9, 0), 'expected_time': time(9, 0), 'reason': 'Skin Rash Consultation', 'status': 'COMPLETED', 'priority': 'NORMAL', 'token': 'T-401'},
+
+            # Dr. Meena
+            {'patient': users_dict['patient4'], 'doctor': doctors_dict['Meena'], 'date': today, 'time': time(8, 0), 'expected_time': time(8, 0), 'reason': 'Flu & Fever Treatment', 'status': 'COMPLETED', 'priority': 'NORMAL', 'token': 'T-501'},
+
+            # Dr. Karthik
+            {'patient': users_dict['patient5'], 'doctor': doctors_dict['Karthik'], 'date': today, 'time': time(9, 30), 'expected_time': time(9, 30), 'reason': 'Migraine Evaluation', 'status': 'ONGOING', 'priority': 'NORMAL', 'token': 'T-601'},
         ]
 
         for sa in sample_appts:
@@ -167,12 +124,6 @@ class Command(BaseCommand):
                 }
             )
             if appt_created:
-                self.stdout.write(self.style.SUCCESS(f"Created Sample Appointment #{appt.id} ({sa['status']}) for {sa['patient'].username}"))
-                # Create sample notification
-                Notification.objects.create(
-                    patient=sa['patient'],
-                    notification_type='BOOKED' if sa['status'] != 'EMERGENCY' else 'EMERGENCY',
-                    message=f"Appointment #{appt.id} status: {sa['status']} with Dr. {sa['doctor'].name} ({sa['doctor'].specialization})."
-                )
+                self.stdout.write(self.style.SUCCESS(f"Created Sample Appt #{appt.id} ({sa['status']}) for {sa['patient'].username} with Dr. {sa['doctor'].name}"))
 
-        self.stdout.write(self.style.SUCCESS("All sample demo data successfully populated!"))
+        self.stdout.write(self.style.SUCCESS("All sample demo data for all doctors successfully populated!"))

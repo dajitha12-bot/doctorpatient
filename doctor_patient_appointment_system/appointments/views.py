@@ -278,11 +278,19 @@ def patient_tracking(request):
     user_position = 0
 
     if active_appt:
-        # Fetch ALL appointments for this doctor on this day (previous completed, ongoing, waiting, cancelled)
-        queue_list = Appointment.objects.filter(
+        # Fetch ALL appointments for this doctor on this day
+        doc_queue = Appointment.objects.filter(
             doctor=active_appt.doctor,
             appointment_date=active_appt.appointment_date
         ).order_by('appointment_time', 'id')
+
+        if doc_queue.count() > 1:
+            queue_list = doc_queue
+        else:
+            # Fallback to full hospital queue for the date if doctor queue has only 1 item
+            queue_list = Appointment.objects.filter(
+                appointment_date=active_appt.appointment_date
+            ).order_by('appointment_time', 'id')
 
         ongoing_appt = queue_list.filter(status='ONGOING').first()
 
