@@ -1,9 +1,11 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from appointments.models import Doctor, UserProfile
+from django.utils import timezone
+from datetime import time, timedelta
+from appointments.models import Doctor, UserProfile, Appointment, Notification
 
 class Command(BaseCommand):
-    help = 'Populates database with initial Receptionist user, default Doctors, and demo Patients'
+    help = 'Populates database with initial Receptionist user, default Doctors, demo Patients, and sample Appointments'
 
     def handle(self, *args, **kwargs):
         # 1. Receptionist User
@@ -27,7 +29,7 @@ class Command(BaseCommand):
             defaults={'user_type': 'RECEPTIONIST', 'phone_number': '+1-555-0199'}
         )
 
-        # 2. Default Doctors as required
+        # 2. Default Doctors
         default_doctors = [
             {'name': 'Arun Kumar', 'specialization': 'Cardiology', 'avg_time': 15, 'days': 'Mon - Sat', 'times': '09:00 AM - 04:00 PM'},
             {'name': 'Priya', 'specialization': 'Dermatology', 'avg_time': 10, 'days': 'Mon - Fri', 'times': '10:00 AM - 05:00 PM'},
@@ -36,6 +38,7 @@ class Command(BaseCommand):
             {'name': 'Karthik', 'specialization': 'Neurology', 'avg_time': 20, 'days': 'Tue - Sat', 'times': '10:00 AM - 04:00 PM'},
         ]
 
+        doctors_dict = {}
         for d in default_doctors:
             doc, doc_created = Doctor.objects.get_or_create(
                 name=d['name'],
@@ -47,6 +50,7 @@ class Command(BaseCommand):
                     'available_times': d['times'],
                 }
             )
+            doctors_dict[d['name']] = doc
             if doc_created:
                 self.stdout.write(self.style.SUCCESS(f"Created Default Doctor: Dr. {d['name']} ({d['specialization']})"))
 
@@ -55,8 +59,11 @@ class Command(BaseCommand):
             {'username': 'patient1', 'first_name': 'Rahul', 'last_name': 'Sharma', 'email': 'patient1@gmail.com', 'phone': '9876543210'},
             {'username': 'patient2', 'first_name': 'Sneha', 'last_name': 'Gupta', 'email': 'patient2@gmail.com', 'phone': '9876543211'},
             {'username': 'patient3', 'first_name': 'Amit', 'last_name': 'Verma', 'email': 'patient3@gmail.com', 'phone': '9876543212'},
+            {'username': 'patient4', 'first_name': 'Anika', 'last_name': 'Patel', 'email': 'patient4@gmail.com', 'phone': '9876543213'},
+            {'username': 'patient5', 'first_name': 'Kiran', 'last_name': 'Kumar', 'email': 'patient5@gmail.com', 'phone': '9876543214'},
         ]
 
+        users_dict = {}
         for p in patients_data:
             user, created = User.objects.get_or_create(
                 username=p['username'],
@@ -71,3 +78,101 @@ class Command(BaseCommand):
                 user=user,
                 defaults={'user_type': 'PATIENT', 'phone_number': p['phone']}
             )
+            users_dict[p['username']] = user
+
+        # 4. Sample Demo Appointments (ONGOING, WAITING, COMPLETED, CANCELLED, EMERGENCY)
+        today = timezone.now().date()
+
+        sample_appts = [
+            {
+                'patient': users_dict['patient1'],
+                'doctor': doctors_dict['Arun Kumar'],
+                'date': today,
+                'time': time(9, 30),
+                'expected_time': time(9, 30),
+                'reason': 'Chest discomfort & cardiac checkup',
+                'status': 'ONGOING',
+                'priority': 'NORMAL',
+                'token': 'T-101'
+            },
+            {
+                'patient': users_dict['patient2'],
+                'doctor': doctors_dict['Arun Kumar'],
+                'date': today,
+                'time': time(9, 45),
+                'expected_time': time(9, 45),
+                'reason': 'Acute shortness of breath',
+                'status': 'WAITING',
+                'priority': 'EMERGENCY',
+                'token': 'T-102'
+            },
+            {
+                'patient': users_dict['patient3'],
+                'doctor': doctors_dict['Arun Kumar'],
+                'date': today,
+                'time': time(10, 0),
+                'expected_time': time(10, 15),
+                'reason': 'Routine ECG evaluation',
+                'status': 'WAITING',
+                'priority': 'NORMAL',
+                'token': 'T-103'
+            },
+            {
+                'patient': users_dict['patient4'],
+                'doctor': doctors_dict['Meena'],
+                'date': today,
+                'time': time(9, 0),
+                'expected_time': time(9, 0),
+                'reason': 'Fever & flu symptom treatment',
+                'status': 'COMPLETED',
+                'priority': 'NORMAL',
+                'token': 'T-100'
+            },
+            {
+                'patient': users_dict['patient5'],
+                'doctor': doctors_dict['Karthik'],
+                'date': today,
+                'time': time(10, 30),
+                'expected_time': time(10, 30),
+                'reason': 'Migraine & headache evaluation',
+                'status': 'WAITING',
+                'priority': 'NORMAL',
+                'token': 'T-104'
+            },
+            {
+                'patient': users_dict['patient3'],
+                'doctor': doctors_dict['Ravi'],
+                'date': today,
+                'time': time(11, 0),
+                'expected_time': time(11, 0),
+                'reason': 'Knee joint stiffness',
+                'status': 'CANCELLED',
+                'priority': 'NORMAL',
+                'token': 'T-105'
+            },
+        ]
+
+        for sa in sample_appts:
+            appt, appt_created = Appointment.objects.get_or_create(
+                patient=sa['patient'],
+                doctor=sa['doctor'],
+                appointment_date=sa['date'],
+                appointment_time=sa['time'],
+                defaults={
+                    'expected_time': sa['expected_time'],
+                    'reason': sa['reason'],
+                    'status': sa['status'],
+                    'priority': sa['priority'],
+                    'token_number': sa['token'],
+                }
+            )
+            if appt_created:
+                self.stdout.write(self.style.SUCCESS(f"Created Sample Appointment #{appt.id} ({sa['status']}) for {sa['patient'].username}"))
+                # Create sample notification
+                Notification.objects.create(
+                    patient=sa['patient'],
+                    notification_type='BOOKED' if sa['status'] != 'EMERGENCY' else 'EMERGENCY',
+                    message=f"Appointment #{appt.id} status: {sa['status']} with Dr. {sa['doctor'].name} ({sa['doctor'].specialization})."
+                )
+
+        self.stdout.write(self.style.SUCCESS("All sample demo data successfully populated!"))
