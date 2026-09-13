@@ -1,5 +1,5 @@
-
 import os
+import shutil
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -7,6 +7,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-test-key-for-college-project'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.vercel.app',
+    'https://*.now.sh',
+    'http://localhost',
+    'http://127.0.0.1',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -49,10 +55,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hospital_system.wsgi.application'
 
+# Configure Database path for Vercel / serverless environment
+IS_VERCEL = os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+
+if IS_VERCEL:
+    TMP_DB = Path('/tmp/db.sqlite3')
+    ORIGINAL_DB = BASE_DIR / 'db.sqlite3'
+    if not TMP_DB.exists() and ORIGINAL_DB.exists():
+        try:
+            shutil.copyfile(ORIGINAL_DB, TMP_DB)
+        except Exception:
+            pass
+    DB_PATH = TMP_DB
+else:
+    DB_PATH = BASE_DIR / 'db.sqlite3'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DB_PATH,
     }
 }
 
