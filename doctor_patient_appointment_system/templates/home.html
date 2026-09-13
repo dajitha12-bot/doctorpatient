@@ -1,22 +1,61 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="card" style="max-width: 700px; margin: 40px auto; text-align: center; padding: 40px 30px;">
-    <div style="width: 56px; height: 56px; background: #eff6ff; color: #2563eb; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-            <path d="M2 12h20"></path>
-        </svg>
+<div style="max-width: 850px; margin: 40px auto;">
+    <div class="card" style="text-align: center; padding: 40px 30px; margin-bottom: 24px;">
+        <div style="width: 56px; height: 56px; background: #eff6ff; color: #2563eb; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                <path d="M2 12h20"></path>
+            </svg>
+        </div>
+
+        <h1 style="font-size: 2.1rem; font-weight: 800; color: #0f172a; margin-bottom: 12px; letter-spacing: -0.02em;">
+            Hospital Queue & Appointment Tracker
+        </h1>
+        <p class="text-muted" style="font-size: 1.05rem; line-height: 1.6; max-width: 600px; margin: 0 auto 10px auto;">
+            Streamlined doctor-patient appointment booking, real-time live queue status tracking, and emergency priority management.
+        </p>
     </div>
 
-    <h1 style="font-size: 2rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Hospital Queue & Appointment Tracker</h1>
-    <p class="text-muted" style="font-size: 1.05rem; margin-bottom: 30px; line-height: 1.6;">
-        Streamlined doctor-patient appointment booking, real-time live queue status tracking, and emergency priority management.
-    </p>
+    <!-- 2 SEPARATE LOGIN PORTALS -->
+    <div class="grid-2" style="gap: 24px;">
+        <!-- PATIENT PORTAL -->
+        <div class="card" style="border-top: 4px solid #2563eb; padding: 32px 24px; text-align: center;">
+            <div style="width: 44px; height: 44px; background: #eff6ff; color: #2563eb; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Patient Portal</h3>
+            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 24px; min-height: 40px;">
+                Book appointments, track live queue status, and view delay notifications.
+            </p>
 
-    <div style="display: flex; gap: 14px; justify-content: center;">
-        <a href="{% url 'login' %}" class="btn btn-primary" style="padding: 12px 28px; font-size: 1rem;">Sign In</a>
-        <a href="{% url 'register' %}" class="btn btn-secondary" style="padding: 12px 28px; font-size: 1rem;">Register Patient Account</a>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="{% url 'patient_login' %}" class="btn btn-primary" style="padding: 12px; width: 100%;">
+                    <span>Patient Login</span>
+                </a>
+                <a href="{% url 'register' %}" class="btn btn-secondary" style="padding: 12px; width: 100%;">
+                    <span>Register Patient Account</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- RECEPTIONIST PORTAL -->
+        <div class="card" style="border-top: 4px solid #059669; padding: 32px 24px; text-align: center;">
+            <div style="width: 44px; height: 44px; background: #f0fdf4; color: #059669; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Receptionist Portal</h3>
+            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 24px; min-height: 40px;">
+                Hospital queue control, 1-click consultation completion, emergency marking & delay management.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="{% url 'receptionist_login' %}" class="btn btn-success" style="padding: 12px; width: 100%;">
+                    <span>Receptionist Login</span>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

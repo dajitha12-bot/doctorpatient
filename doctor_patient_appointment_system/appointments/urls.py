@@ -6,7 +6,9 @@ urlpatterns = [
     # Common URLs
     path('', views.home, name='home'),
     path('register/', views.register, name='register'),
-    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('login/', views.patient_login, name='login'),
+    path('patient/login/', views.patient_login, name='patient_login'),
+    path('receptionist/login/', views.receptionist_login, name='receptionist_login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
 
     # Patient URLs

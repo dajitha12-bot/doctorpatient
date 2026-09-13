@@ -101,16 +101,22 @@
                             <span>Home</span>
                         </a>
                     </li>
-                    <li class="nav-item {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
-                        <a href="{% url 'login' %}">
+                    <li class="nav-item {% if request.resolver_match.url_name == 'patient_login' or request.resolver_match.url_name == 'login' %}active{% endif %}">
+                        <a href="{% url 'patient_login' %}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-                            <span>Login</span>
+                            <span>Patient Login</span>
                         </a>
                     </li>
                     <li class="nav-item {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
                         <a href="{% url 'register' %}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-                            <span>Register</span>
+                            <span>Register Patient</span>
+                        </a>
+                    </li>
+                    <li class="nav-item {% if request.resolver_match.url_name == 'receptionist_login' %}active{% endif %}">
+                        <a href="{% url 'receptionist_login' %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                            <span>Receptionist Login</span>
                         </a>
                     </li>
                 {% endif %}

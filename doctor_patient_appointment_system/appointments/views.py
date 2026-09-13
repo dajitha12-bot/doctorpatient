@@ -34,6 +34,8 @@ def patient_required(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped
 
+from django.contrib.auth.forms import AuthenticationForm
+
 # Common Views
 def home(request):
     if request.user.is_authenticated:
@@ -41,6 +43,63 @@ def home(request):
             return redirect('receptionist_dashboard')
         return redirect('patient_dashboard')
     return render(request, 'home.html')
+
+def patient_login(request):
+    if request.user.is_authenticated:
+        if is_receptionist_user(request.user):
+            return redirect('receptionist_dashboard')
+        return redirect('patient_dashboard')
+
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            if is_receptionist_user(user):
+                messages.error(request, "This account is a Receptionist account. Please use Receptionist Login.")
+            else:
+                login(request, user)
+                messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+                return redirect('patient_dashboard')
+        else:
+            messages.error(request, "Invalid username or password.")
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'login.html', {
+        'form': form,
+        'title': 'Patient Login',
+        'subtitle': 'Sign in to access your appointment dashboard',
+        'role': 'patient'
+    })
+
+def receptionist_login(request):
+    if request.user.is_authenticated:
+        if is_receptionist_user(request.user):
+            return redirect('receptionist_dashboard')
+        return redirect('patient_dashboard')
+
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            if not is_receptionist_user(user):
+                messages.error(request, "This account is a Patient account. Please use Patient Login.")
+            else:
+                login(request, user)
+                messages.success(request, "Welcome to Receptionist Administration Portal.")
+                return redirect('receptionist_dashboard')
+        else:
+            messages.error(request, "Invalid username or password.")
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'login.html', {
+        'form': form,
+        'title': 'Receptionist Login',
+        'subtitle': 'Sign in to hospital queue control & management portal',
+        'role': 'receptionist'
+    })
+
 
 def register(request):
     if request.user.is_authenticated:
