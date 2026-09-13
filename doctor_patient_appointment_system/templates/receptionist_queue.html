@@ -36,17 +36,19 @@
                     </td>
                     <td><span class="badge status-{{ item.status|lower }}">{{ item.status }}</span></td>
                     <td>
-                        {% if item.status == 'WAITING' and item.priority != 'EMERGENCY' %}
-                            <form action="{% url 'mark_emergency_action' item.id %}" method="post" style="display: inline;">
+                        {% if item.priority != 'EMERGENCY' and item.status != 'COMPLETED' and item.status != 'CANCELLED' %}
+                            <form action="{% url 'mark_emergency_action' item.id %}" method="post" style="display: inline-flex; gap: 6px; align-items: center;">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-danger">
+                                <label style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Delay Mins:</label>
+                                <input type="number" name="delay_minutes" value="15" min="5" max="60" style="width: 55px; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;" title="Delay in minutes for remaining patients">
+                                <button type="submit" class="btn btn-sm btn-danger" style="white-space: nowrap;">
                                     🚨 MARK EMERGENCY
                                 </button>
                             </form>
                         {% elif item.priority == 'EMERGENCY' %}
-                            <span class="text-muted" style="font-size: 0.85rem; font-weight: 600; color: #dc2626;">Emergency Priority Active</span>
+                            <span class="badge status-emergency">🚨 Emergency Active</span>
                         {% else %}
-                            <span class="text-muted" style="font-size: 0.85rem;">Ongoing</span>
+                            <span class="badge status-{{ item.status|lower }}">{{ item.status }}</span>
                         {% endif %}
                     </td>
                 </tr>

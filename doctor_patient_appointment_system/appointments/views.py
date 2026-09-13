@@ -432,32 +432,45 @@ def receptionist_queue(request):
 def mark_emergency_action(request, appt_id):
     if request.method == 'POST':
         appt = get_object_or_404(Appointment, id=appt_id)
+        delay = int(request.POST.get('delay_minutes', 15))
+
         appt.priority = 'EMERGENCY'
+        appt.status = 'ONGOING'
         appt.save()
 
         # Auto Notification to emergency patient
         Notification.objects.create(
             patient=appt.patient,
             notification_type='EMERGENCY',
-            message=f"🚨 EMERGENCY PRIORITY: Your appointment #{appt.id} has been marked as Emergency Priority."
+            message=f"🚨 EMERGENCY PRIORITY: Your appointment #{appt.id} has been marked as Emergency Priority and is now ONGOING."
         )
 
-        # Auto Notification to other waiting patients of same doctor
-        other_waiting = Appointment.objects.filter(
+        # Apply delay to all other active/waiting patients of the same doctor
+        other_appts = Appointment.objects.filter(
             doctor=appt.doctor,
             appointment_date=appt.appointment_date,
-            status='WAITING'
+            status__in=['WAITING', 'ONGOING']
         ).exclude(id=appt.id)
 
-        for other in other_waiting:
+        for other in other_appts:
+            other.delay_minutes += delay
+            if other.expected_time:
+                dt = datetime.combine(other.appointment_date, other.expected_time) + timedelta(minutes=delay)
+                other.expected_time = dt.time()
+            if other.status == 'ONGOING':
+                other.status = 'WAITING'
+            other.save()
+
+            new_time_str = other.expected_time.strftime('%I:%M %p') if other.expected_time else 'updated time'
             Notification.objects.create(
                 patient=other.patient,
                 notification_type='DELAY',
-                message=f"🚨 EMERGENCY ALERT: An emergency patient was prioritized for Dr. {appt.doctor.name}. Your estimated waiting time may be adjusted."
+                message=f"🚨 EMERGENCY ALERT: An emergency patient was prioritized for Dr. {appt.doctor.name}. Your appointment #{other.id} is delayed by approx {delay} mins. Updated time: {new_time_str}."
             )
 
-        messages.success(request, f"Appointment #{appt.id} marked as EMERGENCY priority!")
+        messages.success(request, f"Appointment #{appt.id} marked EMERGENCY & set to ONGOING. Applied +{delay} MIN delay to remaining patients.")
     return redirect('receptionist_queue')
+
 
 @receptionist_required
 def receptionist_delay(request):
